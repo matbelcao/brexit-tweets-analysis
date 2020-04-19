@@ -123,7 +123,7 @@ def toCounter(tuple):
 
 def slaveTweetsAnalyzer(consumer_key, consumer_secret, access_token, access_token_secret):
     # MONGODB CONNECTION
-    myclient = pymongo.MongoClient("mongodb://Admin:Matteo1996@localhost:27017/")
+    myclient = pymongo.MongoClient("mongodb://Admin:Password@localhost:27017/")
     mydb = myclient["brexit"]
     usersDB = mydb["users"]
     tweetsDB = mydb["tweets"]
@@ -268,7 +268,7 @@ def master():
     threads = []
 
     # READ THE CSV AND INSTANTIATE THE THREAD
-    with open('./twitter_credentials/credentials.csv') as csv_file:
+    with open('./twitter_credentials.csv') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
         for row in csv_reader:

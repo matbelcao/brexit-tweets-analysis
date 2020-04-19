@@ -4,16 +4,16 @@ import pymongo
 from bson.code import Code
 from plotly.subplots import make_subplots
 
+
 # MONGODB CONNECTION
-myclient = pymongo.MongoClient("mongodb://Admin:Matteo1996@localhost:27017/")
+myclient = pymongo.MongoClient("mongodb://Admin:Password@localhost:27017/")
 mydb = myclient["brexit"]
 usersDB = mydb["users"]
 tweetsDB = mydb["tweets"]
 
 
-def usersMapReduce():
-
-    # MONGODB CODE FOR USERS ANALYSIS
+def tweetsMapReduce():
+    # MONGODB CODE FOR TWEETS ANALYSIS
     mapper = Code("""
                   function() {
                            for (var idx = 0; idx < this.salient_words.length; idx++) {
@@ -32,18 +32,20 @@ def usersMapReduce():
                    """)
 
     # MAP-REDUCE INVOCATIONS
-    usersDB.map_reduce(mapper, reducer, out={"replace": "leave_word_counts"},
-                       query={"salient_words": {"$exists": True}, "language": "en", "stance": "leave"})
+    tweetsDB.map_reduce(mapper, reducer, out={"replace": "leave_word_counts"},
+                        query={"salient_words": {"$exists": True}, "language": "en", "t_stance": "leave"})
 
-    usersDB.map_reduce(mapper, reducer, out={"replace": "remain_word_counts"},
-                       query={"salient_words": {"$exists": True}, "language": "en", "stance": "remain"})
+    tweetsDB.map_reduce(mapper, reducer, out={"replace": "remain_word_counts"},
+                        query={"salient_words": {"$exists": True}, "language": "en", "t_stance": "remain"})
 
 
-def usersCorrectionCoefficient():
-    leaveCount = usersDB.count_documents({"language": "en", "stance": "leave"})
-    remainCount = usersDB.count_documents({"language": "en", "stance": "remain"})
+
+def tweetsCorrectionCoefficient():
+    leaveCount = tweetsDB.count_documents({"language": "en", "t_stance": "leave"})
+    remainCount = tweetsDB.count_documents({"language": "en", "t_stance": "remain"})
     k = remainCount / leaveCount
     return k
+
 
 
 def analysis(correctionCoefficient):
@@ -61,6 +63,7 @@ def analysis(correctionCoefficient):
     print(dfRemain)
 
 
+
     # INDIVIDUAL PLOTS LEAVE & REMAIN
 
     fig = make_subplots(rows=1, cols=2, start_cell="bottom-left",subplot_titles=("LEAVE", "REMAIN"))
@@ -68,11 +71,14 @@ def analysis(correctionCoefficient):
                   row=1, col=1)
     fig.add_trace(go.Bar(x=list(dfRemain["word"][:30]), y=list(dfRemain["remainCount"][:30]), name="remain", marker_color="rgb(0,82,204)"),
                   row=1, col=2)
+    fig.update_layout(title="Top 30 most used words for \"leavers\" and \"remainers\"",
+                      font=dict(family="Courier New, monospace", size=18, color="#7f7f7f"))
     fig.update_layout(title={'text': "Top 30 most used words for \"leavers\" and \"remainers\"", 'y': 0.98},
                       font=dict(family="Courier New, monospace", size=18, color="#7f7f7f"))
     for i in fig['layout']['annotations']:
         i['font'] = dict(family="Courier New, monospace", size=25, color="#7f7f7f")
     fig.show()
+
 
 
     # AGGREGATED DATAFRAME
@@ -107,7 +113,8 @@ def analysis(correctionCoefficient):
     return
 
 
+
 if __name__ == '__main__':
-    usersMapReduce()
-    k = usersCorrectionCoefficient()
+    tweetsMapReduce()
+    k = tweetsCorrectionCoefficient()
     analysis(k)

@@ -1,3 +1,4 @@
+import csv
 import datetime as dt
 from itertools import takewhile
 import collections
@@ -19,10 +20,14 @@ warnings.filterwarnings("ignore")
 def load_api():
     """ Function that loads the twitter API after authorizing the user. """
 
-    consumer_key = ''
-    consumer_secret = ''
-    access_token = ''
-    access_token_secret = ''
+    with open('./twitter_credentials.csv') as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        records = [line for line in csv_reader]
+
+    consumer_key = records[1][0]
+    consumer_secret = records[1][1]
+    access_token = records[1][2]
+    access_token_secret = records[1][3]
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
 
@@ -147,6 +152,8 @@ def main():
     usersDB = mydb["users"]
     tweetsDB = mydb["tweets"]
 
+    api = load_api()
+
     # GET the user ID on the database
     mydoc = usersDB.find_one({"salient_words": {"$exists": False}}, {"user_id": 1, "_id": 0})
 
@@ -187,8 +194,6 @@ def main():
         # GET the tweets not yet analyzed on the database
         mydoc = tweetsDB.find({"user_id": userId, "language": {"$exists": False}})
         tweets = list(mydoc)
-
-        api = load_api()
 
         # ITERATION ON TWEET NOT YET ANALYZED
         for t in tweets:

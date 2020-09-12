@@ -128,6 +128,8 @@ def slaveTweetsAnalyzer(consumer_key, consumer_secret, access_token, access_toke
     usersDB = mydb["users"]
     tweetsDB = mydb["tweets"]
 
+    api = load_api(consumer_key, consumer_secret, access_token, access_token_secret)
+
     # GET the user ID on the database
     mydoc = usersDB.aggregate(
         [{"$match": {"salient_words": {"$exists": False}}}, {"$project": {"user_id": 1, "_id": 0}},
@@ -172,8 +174,6 @@ def slaveTweetsAnalyzer(consumer_key, consumer_secret, access_token, access_toke
         # GET the tweets not yet analyzed on the database
         mydoc = tweetsDB.find({"user_id": userId, "language": {"$exists": False}})
         tweets = list(mydoc)
-
-        api = load_api(consumer_key, consumer_secret, access_token, access_token_secret)
 
         # ITERATION ON TWEET NOT YET ANALYZED
         for t in tweets:

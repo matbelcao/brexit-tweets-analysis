@@ -1,0 +1,15 @@
+Line commands for importing/exporting the mongoDB database using linux
+
+
+DATABASE EXPORTATION : mongodump -d brexit -o <PATH> -u <USER> -p <PASSWORD> --authenticationDatabase admin
+
+es: mongodump -d brexit -o ./brexit-tweets-analysis/db/mongoDB_backup -u Admin -p Password --authenticationDatabase admin
+
+----------------------------------------------------------------------------------------------------------------
+
+DATABASE IMPORTATION : mongorestore -d brexit <PATH>/brexit/ -u <USER> -p <PASSWORD> --authenticationDatabase admin
+
+es: mongorestore -d brexit ./brexit-tweets-analysis/db/mongoDB_backup/brexit/ -u Admin -p Password --authenticationDatabase admin
+
+
+
